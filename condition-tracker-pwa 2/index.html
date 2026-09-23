@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#111827" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Condition" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="styles.css" />
+  <title>Condition Tracker</title>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow" id="todayLabel"></div>
+        <h1>Condition</h1>
+      </div>
+      <button class="icon-btn" id="installBtn" hidden>追加</button>
+    </header>
+
+    <section id="homeView" class="view active">
+      <article class="score-card">
+        <div class="score-ring" id="scoreRing">
+          <div>
+            <span class="score-number" id="scoreNumber">--</span>
+            <span class="score-unit">点</span>
+          </div>
+        </div>
+        <div class="score-copy">
+          <div class="muted">今日のコンディション</div>
+          <h2 id="scoreLabel">データ待ち</h2>
+          <p id="scoreNote">「起きた」や食事・運動を記録すると自動で更新されます。</p>
+          <div class="coverage" id="coverageLabel">データ充足率 0%</div>
+        </div>
+      </article>
+
+      <section class="quick-grid">
+        <article class="metric-card">
+          <div class="metric-head"><span>睡眠</span><strong id="sleepPoints">--/40</strong></div>
+          <div class="metric-main" id="sleepDuration">未記録</div>
+          <div class="metric-sub" id="sleepTimes">寝る / 起きた で記録</div>
+        </article>
+
+        <article class="metric-card">
+          <div class="metric-head"><span>食事</span><strong id="foodPoints">--/35</strong></div>
+          <div class="metric-main"><span id="kcalNow">0</span> / <span id="kcalTarget">2200</span> kcal</div>
+          <div class="metric-sub" id="macroSummary">P 0 / F 0 / C 0</div>
+        </article>
+
+        <article class="metric-card">
+          <div class="metric-head"><span>運動</span><strong id="workoutPoints">--/25</strong></div>
+          <div class="metric-main" id="workoutSummary">未記録</div>
+          <div class="metric-sub" id="weeklyWorkout">直近7日 0分</div>
+        </article>
+
+        <article class="metric-card">
+          <div class="metric-head"><span>連続記録</span><strong>STREAK</strong></div>
+          <div class="metric-main" id="streakCount">0日</div>
+          <div class="metric-sub">睡眠・食事・運動のいずれかを記録</div>
+        </article>
+      </section>
+
+      <section class="action-row">
+        <button class="primary action" id="sleepActionBtn">寝る</button>
+        <button class="secondary action" data-nav="food">食事を記録</button>
+        <button class="secondary action" data-nav="workout">運動を記録</button>
+      </section>
+
+      <article class="insight-card">
+        <div class="eyebrow">TODAY</div>
+        <h3>今日あと何をすると良い？</h3>
+        <p id="nextActionText">まずは1つ記録してみましょう。</p>
+      </article>
+    </section>
+
+    <section id="foodView" class="view">
+      <div class="section-title">
+        <div><div class="eyebrow">FOOD</div><h2>食事を記録</h2></div>
+      </div>
+      <article class="form-card">
+        <label for="foodText">食べたものをそのまま入力</label>
+        <textarea id="foodText" rows="5" placeholder="例：ご飯200g、納豆1パック、卵2個、味噌汁"></textarea>
+        <label for="mealType">食事</label>
+        <select id="mealType">
+          <option>朝食</option><option>昼食</option><option>夕食</option><option>間食</option>
+        </select>
+        <button class="primary full" id="analyzeFoodBtn">カロリー・PFCを計算</button>
+      </article>
+
+      <article class="result-card" id="foodEstimateCard" hidden>
+        <div class="metric-head"><span>推定結果</span><strong>概算</strong></div>
+        <div class="estimate-grid">
+          <div><span>kcal</span><strong id="estKcal">0</strong></div>
+          <div><span>P</span><strong id="estP">0g</strong></div>
+          <div><span>F</span><strong id="estF">0g</strong></div>
+          <div><span>C</span><strong id="estC">0g</strong></div>
+        </div>
+        <div id="foodBreakdown" class="breakdown"></div>
+        <p class="small muted">食品名・量からの概算です。外食や調理法で実際の栄養値は変わります。</p>
+        <button class="primary full" id="saveFoodBtn">この内容で保存</button>
+      </article>
+
+      <section>
+        <h3>今日の食事</h3>
+        <div id="foodLogList" class="log-list"></div>
+      </section>
+    </section>
+
+    <section id="workoutView" class="view">
+      <div class="section-title">
+        <div><div class="eyebrow">WORKOUT</div><h2>運動を記録</h2></div>
+      </div>
+      <article class="form-card">
+        <label for="workoutType">運動</label>
+        <select id="workoutType">
+          <option>筋トレ</option><option>ウォーキング</option><option>ランニング</option><option>自転車</option><option>ストレッチ</option><option>その他</option>
+        </select>
+        <label for="workoutMinutes">時間（分）</label>
+        <input id="workoutMinutes" type="number" min="1" max="600" inputmode="numeric" placeholder="45" />
+        <label for="workoutMemo">内容</label>
+        <textarea id="workoutMemo" rows="3" placeholder="例：胸・背中、ベンチプレスなど"></textarea>
+        <button class="primary full" id="saveWorkoutBtn">保存</button>
+      </article>
+      <section>
+        <h3>今日の運動</h3>
+        <div id="workoutLogList" class="log-list"></div>
+      </section>
+    </section>
+
+    <section id="historyView" class="view">
+      <div class="section-title">
+        <div><div class="eyebrow">HISTORY</div><h2>7日間の推移</h2></div>
+      </div>
+      <div id="historyChart" class="chart"></div>
+      <div id="historyList" class="history-list"></div>
+    </section>
+
+    <section id="settingsView" class="view">
+      <div class="section-title">
+        <div><div class="eyebrow">SETTINGS</div><h2>目標設定</h2></div>
+      </div>
+      <article class="form-card">
+        <label>目標カロリー</label><input id="setKcal" type="number" />
+        <label>目標P（g）</label><input id="setP" type="number" />
+        <label>目標F（g）</label><input id="setF" type="number" />
+        <label>目標C（g）</label><input id="setC" type="number" />
+        <label>週間運動目標（分）</label><input id="setWeeklyWorkout" type="number" />
+        <button class="primary full" id="saveSettingsBtn">設定を保存</button>
+      </article>
+
+      <article class="form-card">
+        <h3>バックアップ</h3>
+        <p class="muted small">端末のブラウザデータを消すと記録が消える可能性があります。定期的な書き出しがおすすめです。</p>
+        <button class="secondary full" id="exportJsonBtn">JSONを書き出す</button>
+        <button class="secondary full" id="exportCsvBtn">CSVを書き出す</button>
+      </article>
+    </section>
+
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-nav="home"><span>●</span><small>ホーム</small></button>
+      <button class="nav-item" data-nav="food"><span>＋</span><small>食事</small></button>
+      <button class="nav-item" data-nav="workout"><span>▲</span><small>運動</small></button>
+      <button class="nav-item" data-nav="history"><span>▥</span><small>履歴</small></button>
+      <button class="nav-item" data-nav="settings"><span>⚙</span><small>設定</small></button>
+    </nav>
+  </main>
+  <div id="toast" class="toast"></div>
+  <script src="app.js"></script>
+</body>
+</html>
